@@ -67,10 +67,6 @@ def bin_search(num, data):
 first_col_in_mchrl = [int(el[0]) for el in mchrl]
 cntr = 0
 for el in gffl:
-    #check for occurrence of 'myc' in the gff file
-    myc_flag = False
-    if 'myc' in el[-1] or 'MYC' in el[-1]:
-        myc_flag = True
     #remove_from_mchrl(res, el[3], i)
     # scale num
     num = int(el[3])
@@ -82,8 +78,6 @@ for el in gffl:
     # now search for num_mchrl in the first_col_in_mchrl array
     index = bin_search(num_mchrl, first_col_in_mchrl)
     if index != -1:
-        if myc_flag:
-            mchrl[index][-1] = '1'
         # extract prev score
         prev = mchrl[index][3]
         if float(el[5]) > float(prev):
@@ -91,8 +85,6 @@ for el in gffl:
 #TEST CASE        if num_mchrl == 22336900:
 #            print 'prev', prev, 'mchrl', mchrl[index][3]
     else:
-        if myc_flag:
-            cntr += 1
         print "Not found", num_mchrl
 
 for el in mchrl:

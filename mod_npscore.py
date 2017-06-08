@@ -53,7 +53,7 @@ def bin_search(num, data):
 
 # extract first column from inpl
 first_col_in_inpl = [int(el[0]) for el in inpl]
-
+cnt = 0
 for el in npsl:
     #remove_from_inpl(res, el[1], i)
     # scale num
@@ -67,6 +67,8 @@ for el in npsl:
     index = bin_search(num_inpl, first_col_in_inpl)
     if index != -1:
         # extract prev score
+        inpl[index][-1] = '1'
+        cnt += 1
         prev = inpl[index][4]
         if float(el[4]) > float(prev):
             inpl[index][4] = el[4]
@@ -77,7 +79,7 @@ for el in npsl:
 
 for el in inpl:
     res += str(el) + '\n'
-
+print(cnt)
 out.write(res)
 out.close()
 nps.close()
