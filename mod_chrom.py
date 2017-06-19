@@ -1,6 +1,13 @@
-g = open('GM12878_CHR22.bed')
-f = open('gm12878_chr22.dat')
-h = open('gm12878_chr22_mod_chrom.dat', 'w')
+'''
+    mod_chrom.py
+    usage: python mod_chrom.py bed_file.bed dataset_file.dat
+    modify the `chrom_state` values changing the 0 to one of (1, 2, 3, 4, 5, 6, 7)
+    this script will create a file named <dataset_file>_mod_chrom.dat
+'''
+g = open(sys.argv[1])
+f = open(sys.argv[2])
+out = sys.argv[2][:-5] + '_mod_chrom.dat' # [:-5] -> ignore the .dat in the dataset_file name
+h = open(out, 'w')
 
 f_lines = f.readlines()
 g_lines = g.readlines()
@@ -19,12 +26,11 @@ chrom_states = {
 for i in xrange(len(g_lines)):
     g_lines[i] = g_lines[i].split()
 
-
 for i in xrange(len(f_lines)):
     f_lines[i] = f_lines[i].split()
 
-print(len(f_lines))
-print(len(g_lines))
+print('Length of ', sys.argv[1], ': ', len(f_lines))
+print('Length of ', sys.argv[2], ': ', len(g_lines))
 
 cnt = 0
 i = 0
@@ -34,7 +40,6 @@ for el in g_lines:
     chrom = str(chrom_states[el[3]])
     while True:
         elem = f_lines[i]
-        #if int(elem[0]) <= high and int(elem[1]) <= high:
         if int(elem[1]) <= high:
             line = elem[0] + '\t' + elem[1] + '\t' + chrom + '\t' + elem[3] + '\t' +  elem[4] + '\t' + elem[5]
             h.write(line)
@@ -42,16 +47,14 @@ for el in g_lines:
             i += 1
             if i == len(f_lines):
                 break
-        #elif int(elem[1]) >= high:
-        #    i += 1
-        #    break
         else:
             break
     if i == len(f_lines):
         break
     cnt += 1
 
-print(cnt)
+print('Length of ', out, ': ', cnt)
+
 f.close()
 g.close()
 h.close()

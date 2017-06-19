@@ -1,7 +1,7 @@
 '''
     create_data.py
-    create 200 base pair intervals from `low1` to `low2`, saved in `filename.dat`
     usage: python create_data.py filename.dat low1 low2 high2
+    create 200 base pair intervals from `low1` to `low2`, saved in `filename.dat`
     round `low1` to the nearest multiple of 50
 '''
 
@@ -26,6 +26,6 @@ while low1 <= low2 and high1 <= high2:
     high1 += 50
     cnt += 1
 
-print('Number of lines in ', sys.argv[1], '= ', cnt)
+print('Length of ', sys.argv[1], ': ', cnt)
 
 f.close()
