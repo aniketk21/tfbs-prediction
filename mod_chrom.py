@@ -1,13 +1,13 @@
 '''
     mod_chrom.py
-    usage: python mod_chrom.py bed_file.bed dataset_file.dat
+    usage: python mod_chrom.py bed_file.bed dataset.dat output.dat
     modify the `chrom_state` values changing the 0 to one of (1, 2, 3, 4, 5, 6, 7)
-    this script will create a file named <dataset_file>_mod_chrom.dat
 '''
+import sys
+
 g = open(sys.argv[1])
 f = open(sys.argv[2])
-out = sys.argv[2][:-5] + '_mod_chrom.dat' # [:-5] -> ignore the .dat in the dataset_file name
-h = open(out, 'w')
+h = open(sys.argv[3], 'w')
 
 f_lines = f.readlines()
 g_lines = g.readlines()
@@ -53,7 +53,7 @@ for el in g_lines:
         break
     cnt += 1
 
-print('Length of ', out, ': ', cnt)
+print('Length of ', sys.argv[3], ': ', cnt)
 
 f.close()
 g.close()

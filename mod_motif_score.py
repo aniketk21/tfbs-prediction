@@ -1,7 +1,13 @@
-mchr = open('gm12878_chr22_mod_chrom.dat')
-gff = open('homo_sapiens.hg19.chr22.gff')
-out = open('gm12878_chr22_mod_motif_score.dat', 'w')
-i = 0
+'''
+    mod_motif_score.py
+    usage: python mod_motif_score.py dataset.dat gff_file output.dat
+    this will modify the motif scores, found in the `gff_file`
+'''
+import sys
+
+mchr = open(sys.argv[1])
+gff = open(sys.argv[2])
+out = open(sys.argv[3], 'w')
 
 mchrl = mchr.readlines()
 gffl = gff.readlines()
@@ -16,20 +22,6 @@ wset = []
 m = []
 
 res = ''
-'''
-def remove_from_mchrl(res, elem, i):
-    '''
-        #remove all entries from mchrl that have low < elem[3] and append them to the result
-    '''
-    el = int(elem[3])
-    for j in range(i, len(mchrl)):
-        elm = int(mchrl[j][0])
-        if elm < el:
-            #res += str(mchrl[j]) + '\n'
-            i += 1
-        else:
-            return
-'''
 def scale(num):
     new_num = 0
     last_two = num % 100
@@ -67,13 +59,11 @@ def bin_search(num, data):
 first_col_in_mchrl = [int(el[0]) for el in mchrl]
 cntr = 0
 for el in gffl:
-    #remove_from_mchrl(res, el[3], i)
     # scale num
     num = int(el[3])
     num_mchrl = scale(num)
     if num_mchrl == 0:
         num_mchrl = num
-    #print(num_mchrl)
 
     # now search for num_mchrl in the first_col_in_mchrl array
     index = bin_search(num_mchrl, first_col_in_mchrl)
@@ -82,14 +72,14 @@ for el in gffl:
         prev = mchrl[index][3]
         if float(el[5]) > float(prev):
             mchrl[index][3] = el[5]
-#TEST CASE        if num_mchrl == 22336900:
-#            print 'prev', prev, 'mchrl', mchrl[index][3]
     else:
         print "Not found", num_mchrl
 
 for el in mchrl:
-    res += str(el) + '\n'
+    res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\n'
+
 out.write(res)
+
 out.close()
 gff.close()
 mchr.close()
