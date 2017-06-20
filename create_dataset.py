@@ -26,6 +26,6 @@ while low1 <= low2 and high1 <= high2:
     high1 += 50
     cnt += 1
 
-print('Length of ', sys.argv[1], ': ', cnt)
+print('Length of ' + sys.argv[1] + ': ' + str(cnt))
 
 f.close()
