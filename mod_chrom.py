@@ -29,21 +29,20 @@ for i in xrange(len(g_lines)):
 for i in xrange(len(f_lines)):
     f_lines[i] = f_lines[i].split()
 
-print('Length of ', sys.argv[1], ': ', len(f_lines))
-print('Length of ', sys.argv[2], ': ', len(g_lines))
+print('Length of ' + sys.argv[1] + ': ' + str(len(g_lines)))
+print('Length of ' + sys.argv[2] + ': ' + str(len(f_lines)))
 
 cnt = 0
 i = 0
+line = ''
 for el in g_lines:
     low = int(el[1])
     high = int(el[2])
-    chrom = str(chrom_states[el[3]])
+    chrom = chrom_states[el[3]]
     while True:
         elem = f_lines[i]
         if int(elem[1]) <= high:
-            line = elem[0] + '\t' + elem[1] + '\t' + chrom + '\t' + elem[3] + '\t' +  elem[4] + '\t' + elem[5]
-            h.write(line)
-            h.write('\n')
+            line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(chrom) + '\t' + str(elem[3]) + '\t' +  str(elem[4]) + '\t' + str(elem[5]) + '\n'
             i += 1
             if i == len(f_lines):
                 break
@@ -53,7 +52,9 @@ for el in g_lines:
         break
     cnt += 1
 
-print('Length of ', sys.argv[3], ': ', cnt)
+h.write(line)
+
+print('Length of ' + sys.argv[3] + ': ' + str(line.count('\n')))
 
 f.close()
 g.close()
