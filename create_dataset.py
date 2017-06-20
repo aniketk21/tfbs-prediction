@@ -18,7 +18,7 @@ high2 = int(sys.argv[4])
 cnt = 0
 while low1 <= low2 and high1 <= high2:
     '''
-        chrStart    chrEnd  chrom_state motif_score chipseq_score   bind
+        chrStart    chrEnd  chrom_state motif_score motif   chipseq_peak
     '''
     f.write(str(low1) + '\t' + str(high1) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
     f.write('\n')
