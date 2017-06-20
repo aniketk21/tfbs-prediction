@@ -73,10 +73,14 @@ for el in npsl:
     index = bin_search(num_inpl, first_col_in_inpl)
     if index != -1:
         # extract prev score
+        inpl[index][-1] = '1'
+        peak_cnt += 1
+        '''
         prev = inpl[index][5]
         if float(el[6]) > float(prev):
             inpl[index][-1] = el[6]
             peak_cnt += 1
+        '''
     else:
         print "Not found", num_inpl
 
