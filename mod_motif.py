@@ -1,6 +1,6 @@
 '''
-    mod_motif_score.py
-    usage: python mod_motif_score.py dataset.dat gff_file output.dat
+    mod_motif.py
+    usage: python mod_motif.py dataset.dat gff_file output.dat
     this will modify the motif scores, found in the `gff_file`
 '''
 import sys
@@ -57,7 +57,7 @@ def bin_search(num, data):
 
 # extract first column from mchrl
 first_col_in_mchrl = [int(el[0]) for el in mchrl]
-cntr = 0
+motif_cnt = 0
 for el in gffl:
     # scale num
     num = int(el[3])
@@ -72,11 +72,18 @@ for el in gffl:
         prev = mchrl[index][3]
         if float(el[5]) > float(prev):
             mchrl[index][3] = el[5]
+
+        # motif present or not?
+        if ('myc' in el[-1]) or ('MYC' in el[-1]):
+            mchrl[index][4] = '1'
+            motif_cnt += 1
     else:
         print "Not found", num_mchrl
 
 for el in mchrl:
     res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\n'
+
+print('Number of motifs = ' + str(motif_cnt))
 
 out.write(res)
 
