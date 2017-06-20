@@ -1,6 +1,14 @@
-inp = open('gm12878_chr22_mod_motif_score.dat')
-nps = open('GM12878_MYC.narrowPeak')
-out = open('gm12878_chr22_mod_npscore.dat', 'w')
+'''
+    mod_peak.py
+    usage: python mod_peak.py narrowPeak_file dataset.dat output.dat
+    modify the `chipseq_peak` values to 1 if a window from narrowPeak file appears in the dataset.
+'''
+
+import sys
+
+inp = open(sys.argv[2])
+nps = open(sys.argv[1])
+out = open(sys.argv[3], 'w')
 
 i = 0
 
@@ -53,34 +61,32 @@ def bin_search(num, data):
 
 # extract first column from inpl
 first_col_in_inpl = [int(el[0]) for el in inpl]
-cnt = 0
+peak_cnt = 0
 for el in npsl:
-    #remove_from_inpl(res, el[1], i)
     # scale num
     num = int(el[1])
     num_inpl = scale(num)
     if num_inpl == 0:
         num_inpl = num
-    #print(num_inpl)
 
     # now search for num_inpl in the first_col_in_inpl array
     index = bin_search(num_inpl, first_col_in_inpl)
     if index != -1:
         # extract prev score
-        inpl[index][-1] = '1'
-        cnt += 1
-        prev = inpl[index][4]
-        if float(el[4]) > float(prev):
-            inpl[index][4] = el[4]
-#TEST CASE        if num_inpl == 22336900:
-#            print 'prev', prev, 'inpl', inpl[index][3]
+        prev = inpl[index][5]
+        if float(el[6]) > float(prev):
+            inpl[index][-1] = el[6]
+            peak_cnt += 1
     else:
         print "Not found", num_inpl
 
 for el in inpl:
-    res += str(el) + '\n'
-print(cnt)
+    res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\n'
+
+print('Number of peaks: ' + str(peak_cnt))
+
 out.write(res)
+
 out.close()
 nps.close()
 inp.close()
