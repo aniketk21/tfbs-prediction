@@ -9,7 +9,23 @@ from keras.optimizers import *
 from keras import regularizers
 from keras.models import load_model
 import keras.backend as K
-#model = load_model('model_myc_ffnn_reg.h5')
+def mean_pred(y_true, y_pred):
+    return K.mean(y_pred)
+def precision(y_true, y_pred):		
+    """Precision metric.		
+    """
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))		
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))		
+    precision = true_positives / (predicted_positives + K.epsilon())		
+    return precision
+def recall(y_true, y_pred):		
+    """Recall metric.
+    """
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+model = load_model('model_myc_ffnn_reg.h5', custom_objects={'precision':precision, 'recall':recall})
 #model.summary()
 #f = open('gm12878_chr22_mod_npscore.dat')
 #f = open('gm_50pct_sorted.csv')
@@ -17,15 +33,16 @@ print 'opening file'
 f = open('peak_68pct.csv')
 l = f.readlines()
 random.shuffle(l)
-#random.shuffle(l)
-#random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
 f.close()
-print 'starting'
-#random.shuffle(l)
+random.shuffle(l)
 len_l = len(l)
 index = []
 for i in range(len_l):
+    print i
     l[i] = l[i].split(',')
+print 'starting'
 
 for i in range(len_l):
     l[i][0] = float(l[i][0])
@@ -36,15 +53,13 @@ for i in range(len_l):
         l[i][3] = 0.0
     else:
         l[i][3] = 1.0
-
+threshold = 0.9
 #random.shuffle(l)
-def mean_pred(y_true, y_pred):
-    return K.mean(y_pred)
-batch_size = 64
+batch_size = 128
 num_classes = 2
 epochs = 8
 
-dataset_split = 0.7
+dataset_split = 0
 
 def create_training_and_test_set(data, split=0.6):
     '''
@@ -55,7 +70,7 @@ def create_training_and_test_set(data, split=0.6):
     y_train = []
     x_test = []
     y_test = []
-    len_data = len(data)
+    len_data = len(data) 
     
     for i in range(int(split * len_data)):
         #x_train.append([[data[i][0], data[i][1], data[i][2], data[i][3], data[i][4]]])
@@ -81,18 +96,18 @@ x_test = np.array(x_test)
 y_test = np.array(y_test).astype('float32')
 
 x_train = x_train.reshape(int(dataset_split*len_l), 3)
-x_test = x_test.reshape(len_l - int(dataset_split*len_l), 3)
+#x_test = x_test.reshape(len_l - int(dataset_split*len_l), 3)
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 
 
-y_train = keras.utils.to_categorical(y_train, num_classes)
-y_test = keras.utils.to_categorical(y_test, num_classes)
+#y_train = keras.utils.to_categorical(y_train, num_classes)
+#y_test = keras.utils.to_categorical(y_test, num_classes)
 '''
 #### Train the model ####
 
 '''
-#'''
+'''
 model = Sequential()
 model.add(Dense(32, activation='relu', input_dim=3, kernel_regularizer=regularizers.l2(0.01)))#input_shape = (5, )))
 model.add(Dropout(0.5))
@@ -100,40 +115,43 @@ model.add(Dense(32, activation='relu', kernel_regularizer=regularizers.l2(0.01))
 model.add(Dropout(0.5))
 model.add(Dense(32, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
 model.add(Dropout(0.5))
-model.add(Dense(2, activation='softmax'))
+model.add(Dense(1, activation='linear'))
 
 model.summary()
 
-model.compile(loss='categorical_crossentropy',
+model.compile(loss='mean_squared_error',
               optimizer=Adam(),
-              metrics=['accuracy'])
+              metrics=['accuracy', precision, recall])
 
 history = model.fit(x_train, y_train,
                     batch_size=batch_size,
                     epochs=epochs,
-                    verbose=1,
-                    validation_data=(x_test, y_test))
+                    verbose=1)
 
 model.save('model_myc_ffnn_reg.h5')
-exit()
+'''
+'''score = model.evaluate(x_test, y_test, verbose=0)
+print len(score), type(score)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1], score[2], score[3])
+#exit()
 #'''
 #### Training ends ####
 #### Test the model ####
-'''
+#'''
 tp = 0 # True Pos
 fp = 0 # False Pos
 tn = 0 # True Neg
 fn = 0 # False Neg
 
 p = ''
-'''
 
 cnt = 0
 acc = 0
 res = 0
 print('actual, predicted')
 for i in range(len(x_test)):
-    #print(float(i)/(len_l - dataset_split*len_l), '%')
+    print(float(i)/(len_l - dataset_split*len_l), '%')
     x_test[i] = np.array(x_test[i])
     x_test[i] = x_test[i].reshape(1, 3)
     x_test[i] = x_test[i].astype('float32')
@@ -142,29 +160,24 @@ for i in range(len(x_test)):
     
     actual = y_test[i]
 
-    print(actual, predicted[0][0])
+    #print(actual, predicted[0][0])
 
-#'''
-'''
-    if (actual == 1) and (predicted == 1): # True Positive
+    if (int(actual) == 1) and (predicted >= threshold): # True Positive
         tp += 1
-    elif (actual == 0) and (predicted == 1): # False Positive
+    elif (int(actual) == 0) and (predicted >= threshold): # False Positive
         fp += 1
-    elif (actual == 1) and (predicted == 0): # False Negative
+    elif (int(actual) == 1) and (predicted < threshold): # False Negative
         fn += 1
-    elif (actual == 0) and (predicted == 0): # True Negative
+    elif (int(actual) == 0) and (predicted <= threshold): # True Negative
         tn += 1
-'''
+
     #p += str([index[i], x_test[i], actual, predicted]) + '\n'
 
-'''
 
-w = open('out', 'w')
-w.write(p)
-w.close()
-'''
+#w = open('out', 'w')
+#w.write(p)
+#w.close()
 
-'''
     
     #if (np.array_equal(np.array([0, 1]).reshape(1, 2).astype('float32'), predicted)):
     #    cnt_pos += 1
@@ -173,8 +186,8 @@ w.close()
         
     #if np.array_equal(output_cases['01'], op):
     #    print np.array_equal(actual, predicted)
-'''
-'''
+
+
 print('TP:', tp, ' ', 'TN:', tn, ' ', 'FP:', fp, 'FN:', fn)
 precision = recall = -1
 try:
@@ -189,10 +202,7 @@ except ZeroDivisionError as z:
 
 print('Precision:', precision)
 print('Recall:', recall)
-'''
-'''
-score = model.evaluate(x_test, y_test, verbose=0)
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
-'''
+
+#'''
+#'''
 sys.stdout.flush()
