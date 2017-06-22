@@ -1,7 +1,7 @@
 '''
-    create_data.py
-    usage: python create_data.py output_file.dat low1 low2 high2
-    create 200 base pair intervals from `low1` to `low2`, saved in `output_file.dat`
+    create_bp_windows.py
+    usage: python create_bp_windows.py output_file.dat low1 low2 high2
+    create 200 base pair windows from `low1` to `low2`, saved in `output_file.dat`
     round `low1` to the nearest multiple of 50
 '''
 
