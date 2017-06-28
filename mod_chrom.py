@@ -3,6 +3,7 @@
     usage: python mod_chrom.py bed_file.bed dataset.dat output.dat
     modify the `chrom_state` values changing the 0 to one of (1, 2, 3, 4, 5, 6, 7)
 '''
+
 import sys
 
 g = open(sys.argv[1])

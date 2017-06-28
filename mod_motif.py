@@ -3,6 +3,7 @@
     usage: python mod_motif.py dataset.dat gff_file output.dat
     this will modify the motif scores, found in the `gff_file`
 '''
+
 import sys
 
 mchr = open(sys.argv[1])
