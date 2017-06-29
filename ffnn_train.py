@@ -10,7 +10,7 @@ from keras import regularizers
 from keras.models import load_model
 import keras.backend as K
 
-custom_metrics_flag = False 
+custom_metrics_flag = False
 to_file = False
 
 def precision(y_true, y_pred):		
@@ -31,7 +31,7 @@ def recall(y_true, y_pred):
     return recall
 
 print 'Opening file...'
-f = open('peak_68pct.csv')
+f = open('hela_mod_peak.dat')
 l = f.readlines()
 f.close()
 
@@ -44,20 +44,28 @@ random.shuffle(l)
 len_l = len(l)
 for i in range(len_l):
     #print i
-    l[i] = l[i].split(',')
+    #l[i] = l[i].split(',') # for csv files
+    #'''
+    l[i] = l[i].split() # for dat files
+    del l[i][0]
+    del l[i][0]
+    #'''
 
 for i in range(len_l):
     l[i][0] = float(l[i][0])
     l[i][1] = float(l[i][1])
     l[i][2] = float(l[i][2])
+    l[i][3] = float(l[i][3]) # for dat files
+    '''
+    # for csv files
     if l[i][3] == 'no\n':
         l[i][3] = 0.0
     else:
         l[i][3] = 1.0
-
+    '''
 batch_size = 128
 num_classes = 2
-epochs = 5
+epochs = 20
 
 threshold = 0.5 # threshold for the classifier
 dataset_split = 0.7
@@ -113,9 +121,9 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         result = ''
     
     for i in xrange(len(x_test)):
-        if not(i%100000):
+        if not(i%10000):
             print(str(float(i)/(len_l - dataset_split*len_l)) + '%')
-            print('TP:', tp, ' ', 'TN:', tn, ' ', 'FP:', fp, 'FN:', fn)
+            print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
             print('______________________')
         
         x_test[i] = np.array(x_test[i])
@@ -126,6 +134,7 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         predicted = predicted[0][0]
         
         actual = int(y_test[i])
+        #print(actual, predicted)
 
         if (actual == 1) and (predicted >= threshold): # True Positive
             tp += 1
@@ -152,6 +161,8 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         recall = float(tp) / (tp + fn)
     except ZeroDivisionError as z:
         pass
+    
+    print('TP:', tp, ' ', 'TN:', tn, ' ', 'FP:', fp, 'FN:', fn)
     
     if write_to_file:
         result = str(threshold) + '\t' + str(precision) + '\t' + str(recall) + '\n'
@@ -196,14 +207,18 @@ if not(custom_metrics_flag):
                         verbose=1,
                         validation_data=(x_test, y_test))
 
-    model.save('ffnn_train_relu.h5')
+    model.save('ffnn_train_whole_genome_hela.h5')
     
     inbuilt_metrics(model, x_test, y_test)
 
 else:
-    model = load_model('ffnn_train_relu.h5', custom_objects={'precision':precision, 'recall':recall})
+    model = load_model('ffnn_train_whole_genome_hela.h5', custom_objects={'precision':precision, 'recall':recall})
     
-    custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, to_file)
-
+    if to_file:
+        for th in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+            print th
+            custom_metrics(model, x_test, y_test, len_l, th, dataset_split, to_file)
+    else:
+        custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, to_file)
 
 sys.stdout.flush()
