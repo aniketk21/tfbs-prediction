@@ -10,8 +10,8 @@ from keras import regularizers
 from keras.models import load_model
 import keras.backend as K
 
-custom_metrics_flag = False
-to_file = False
+custom_metrics_flag = True
+to_file = True
 
 def precision(y_true, y_pred):		
     """
@@ -31,10 +31,10 @@ def recall(y_true, y_pred):
     recall = true_positives / (possible_positives + K.epsilon())
     return recall
     
-model = load_model('ffnn_train_relu.h5', custom_objects={'precision':precision, 'recall':recall})
+model = load_model('ffnn_train_whole_genome_hela.h5', custom_objects={'precision':precision, 'recall':recall})
 
 print('Opening file...')
-f = open('gm12878_chr17_mod_peak.dat')
+f = open('k_mod_peak_v2.dat')
 l = f.readlines()
 f.close()
 
@@ -68,11 +68,11 @@ def create_training_and_test_set(data, split=0.6):
     
     for i in range(int(split * len_data)):
         x_train.append([[data[i][0], data[i][1], data[i][2]]])
-        y_train.append(data[i][3])
+        y_train.append(data[i][-1])
     
     for i in range(int(split * len_data), len_data):
         x_test.append([[data[i][0], data[i][1], data[i][2]]])
-        y_test.append(data[i][3])
+        y_test.append(data[i][-1])
 
     return (x_train, y_train), (x_test, y_test)
 
@@ -109,8 +109,8 @@ def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_
     
     for i in xrange(len(x_test)):
         if not(i%100000):
-            print(str(float(i)/(len_l - dataset_split*len_l)) + '%')
-            print('TP:', tp, ' ', 'TN:', tn, ' ', 'FP:', fp, 'FN:', fn)
+            print(str(100 * float(i) / (len_l - dataset_split*len_l)) + '%')
+            print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
             print('______________________')
         
         x_test[i] = np.array(x_test[i])
@@ -121,7 +121,7 @@ def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_
         predicted = predicted[0][0]
         
         actual = int(y_test[i])
-
+        
         if (actual == 1) and (predicted >= threshold): # True Positive
             tp += 1
         elif (actual == 0) and (predicted >= threshold): # False Positive
@@ -132,12 +132,12 @@ def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_
             tn += 1
         
         if write_to_file:
-            result += index[i][0] + '\t' + index[i][1] + '\t' + str(actual) + '\t' + str(predicted[0][0]) + '\n'
+            result += index[i][0] + '\t' + index[i][1] + '\t' + str(x_test[i]) + '\t' + str(y_test[i]) + '\t' + str(actual) + '\t' + str(predicted) + '\n'
 
     if write_to_file:
         w = open('ffnn_test_output.dat', 'w')
         
-        w.write('chrStart\tchrEnd\tactual\tpredicted\n')
+        w.write('chrStart\tchrEnd\tx_test[i]\ty_test[i]\tactual\tpredicted\n')
         w.write(result)
         
         w.close()
