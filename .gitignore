@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# tfbs specific
+*.narrowPeak
+*.bed
+*.gff
+*.dat
+*.csv
+*.h5
