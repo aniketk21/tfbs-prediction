@@ -6,20 +6,20 @@
 
 import sys
 
-inp = open(sys.argv[2])
 nps = open(sys.argv[1])
+inp = open(sys.argv[2])
 out = open(sys.argv[3], 'w')
-
-i = 0
 
 inpl = inp.readlines()
 npsl = nps.readlines()
 
-for _ in range(len(inpl)):
-    inpl[_] = inpl[_].split()
+for i in range(len(inpl)):
+    inpl[i] = inpl[i].split()
 
-for _ in range(len(npsl)):
-    npsl[_] = npsl[_].split()
+for i in range(len(npsl)):
+    npsl[i] = npsl[i].split()
+
+#del npsl[0] # this element has all the column names, not actual values
 
 wset = []
 m = []
@@ -72,9 +72,9 @@ for el in npsl:
     # now search for num_inpl in the first_col_in_inpl array
     index = bin_search(num_inpl, first_col_in_inpl)
     if index != -1:
-        # extract prev score
-        inpl[index][-1] = '1'
-        peak_cnt += 1
+        if el[8] == 'B': # if bound.
+            inpl[index][5] = '1'
+            peak_cnt += 1
         '''
         prev = inpl[index][5]
         if float(el[6]) > float(prev):
