@@ -13,11 +13,11 @@ out = open(sys.argv[3], 'w')
 mchrl = mchr.readlines()
 gffl = gff.readlines()
 
-for _ in range(len(mchrl)):
-    mchrl[_] = mchrl[_].split()
+for i in range(len(mchrl)):
+    mchrl[i] = mchrl[i].split()
 
-for _ in range(len(gffl)):
-    gffl[_] = gffl[_].split()
+for i in range(len(gffl)):
+    gffl[i] = gffl[i].split()
 
 wset = []
 m = []
@@ -75,7 +75,8 @@ for el in gffl:
             mchrl[index][3] = el[5]
 
         # motif present or not?
-        if ('myc' in el[-1]) or ('MYC' in el[-1]):
+        #if ('myc' in el[-1]) or ('MYC' in el[-1]):
+        if 'CTCF' in el[-1]:    
             mchrl[index][4] = '1'
             motif_cnt += 1
     else:
