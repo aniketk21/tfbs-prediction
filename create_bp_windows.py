@@ -26,10 +26,10 @@ while low1 <= low2 and high1 <= high2:
     high1 += 50
     cnt += 1
 
-while (low2 + 200) <= high2:
-    f.write(str(low2) + '\t' + str(low2 + 200) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
+while (high1 + 200) <= high2:
+    f.write(str(high1) + '\t' + str(high1 + 200) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
     f.write('\n')
-    low2 += 50
+    high1 += 50
     cnt += 1
 
 print('Length of ' + sys.argv[1] + ': ' + str(cnt))
