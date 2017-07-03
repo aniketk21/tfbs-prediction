@@ -69,16 +69,16 @@ for el in gffl:
     # now search for num_mchrl in the first_col_in_mchrl array
     index = bin_search(num_mchrl, first_col_in_mchrl)
     if index != -1:
-        # extract prev score
-        prev = mchrl[index][3]
-        if float(el[5]) > float(prev):
-            mchrl[index][3] = el[5]
-
         # motif present or not?
         #if ('myc' in el[-1]) or ('MYC' in el[-1]):
-        if 'CTCF' in el[-1]:    
-            mchrl[index][4] = '1'
+        if 'E2F' in el[-1]:    
+            #mchrl[index][4] = '1'
             motif_cnt += 1
+            
+            # extract prev score
+            prev = mchrl[index][3]
+            if float(el[5]) > float(prev):
+                mchrl[index][3] = el[5]
     else:
         print "Not found", num_mchrl
 
