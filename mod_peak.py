@@ -72,7 +72,7 @@ for el in npsl:
     # now search for num_inpl in the first_col_in_inpl array
     index = bin_search(num_inpl, first_col_in_inpl)
     if index != -1:
-        if el[8] == 'B': # if bound.
+        if el[3] == 'B': # if bound.
             inpl[index][5] = '1'
             peak_cnt += 1
         '''
