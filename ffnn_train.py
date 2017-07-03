@@ -31,7 +31,7 @@ def recall(y_true, y_pred):
     return recall
 
 print 'Opening file...'
-f = open('hela_mod_peak.dat')
+f = open('gm_chr6_mod_peak.dat')
 l = f.readlines()
 f.close()
 
@@ -52,7 +52,7 @@ for i in range(len_l):
     #'''
 
 for i in range(len_l):
-    l[i][0] = float(l[i][0])
+    l[i][0] = int(float(l[i][0]))
     l[i][1] = float(l[i][1])
     l[i][2] = float(l[i][2])
     l[i][3] = float(l[i][3]) # for dat files
@@ -63,7 +63,7 @@ for i in range(len_l):
     else:
         l[i][3] = 1.0
     '''
-batch_size = 128
+batch_size = 12
 num_classes = 2
 epochs = 20
 
@@ -110,6 +110,9 @@ y_train = y_train.astype('float32')
 x_test = x_test.astype('float32')
 y_test = y_test.astype('float32')
 
+y_train = keras.utils.to_categorical(y_train, 2)
+y_test = keras.utils.to_categorical(y_test, 2)
+
 def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write_to_file=False):
     tp = 0 # True Pos
     fp = 0 # False Pos
@@ -121,7 +124,7 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         result = ''
     
     for i in xrange(len(x_test)):
-        if not(i%10000):
+        if not(i%100):
             print(str(float(i)/(len_l - dataset_split*len_l)) + '%')
             print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
             print('______________________')
@@ -193,11 +196,11 @@ if not(custom_metrics_flag):
     model.add(Dropout(0.5))
     model.add(Dense(32, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
     model.add(Dropout(0.5))
-    model.add(Dense(1, activation='relu'))
+    model.add(Dense(2, activation='softmax'))
 
     model.summary()
 
-    model.compile(loss='mean_squared_error',
+    model.compile(loss='categorical_crossentropy',
                   optimizer=Adam(),
                   metrics=['accuracy', precision, recall])
 
@@ -207,12 +210,12 @@ if not(custom_metrics_flag):
                         verbose=1,
                         validation_data=(x_test, y_test))
 
-    model.save('ffnn_train_whole_genome_hela.h5')
+    model.save('ffnn_train_gm_chr6.h5')
     
     inbuilt_metrics(model, x_test, y_test)
 
 else:
-    model = load_model('ffnn_train_whole_genome_hela.h5', custom_objects={'precision':precision, 'recall':recall})
+    model = load_model('ffnn_train_gm_chr6.h5', custom_objects={'precision':precision, 'recall':recall})
     
     if to_file:
         for th in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
