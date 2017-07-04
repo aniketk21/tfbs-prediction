@@ -53,6 +53,10 @@ for el in g_lines:
         break
     cnt += 1
 
+for j in range(i, len(f_lines)):
+    elem = f_lines[j]
+    line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' + '0' + '\t' + str(elem[5]) + '\n'
+
 h.write(line)
 
 print('Length of ' + sys.argv[3] + ': ' + str(line.count('\n')))
