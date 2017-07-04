@@ -31,29 +31,32 @@ def recall(y_true, y_pred):
     recall = true_positives / (possible_positives + K.epsilon())
     return recall
     
-model = load_model('ffnn_train_gm_all.h5', custom_objects={'precision':precision, 'recall':recall})
+model = load_model('ffnn_train_gm_chr6_77pct.h5', custom_objects={'precision':precision, 'recall':recall})
 
 print('Opening file...')
-f = open('k_mod_peak.dat')
+f = open('k_chr1_mod_peak_uniq.csv')
 l = f.readlines()
 f.close()
-random.shuffle(l)
 len_l = len(l)
 index = []
 for i in range(len_l):
-    l[i] = l[i].split()
-    index.append([l[i][0], l[i][1]])
-    del l[i][0] # delete chrStart
-    del l[i][0] # delete chrEnd
+    l[i] = l[i].split(',')
+    #index.append([l[i][0], l[i][1]])
+    #del l[i][0] # delete chrStart
+    #del l[i][0] # delete chrEnd
 
 for i in range(len_l):
     l[i][0] = float(l[i][0])
     l[i][1] = float(l[i][1])
     l[i][2] = float(l[i][2])
-    l[i][3] = float(l[i][3])
+    #l[i][3] = float(l[i][3])
+    if l[i][3] == 'no\n':
+        l[i][3] = 0.0
+    else:
+        l[i][3] = 1.0
 
-threshold = 0.5 # threshold for the classifier
-dataset_split = 0.80 # give the whole file as test set
+threshold = 0.55 # threshold for the classifier
+dataset_split = 0 # give the whole file as test set
 
 def create_training_and_test_set(data, split=0.6):
     '''
@@ -89,7 +92,7 @@ if not(custom_metrics_flag):
     x_test = x_test.astype('float32')
 
 y_test = y_test.astype('float32')
-y_test = keras.utils.to_categorical(y_test, 2)
+#y_test = keras.utils.to_categorical(y_test, 2)
 
 def inbuilt_metrics(model, x_test, y_test):
     score = model.evaluate(x_test, y_test, verbose=0)
@@ -98,7 +101,7 @@ def inbuilt_metrics(model, x_test, y_test):
     print('Test precision:', score[2])
     print('Test recall:', score[3])
 
-def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_file=False):
+def custom_metrics(model, index, x_test, y_test, len_l, threshold, dataset_split, write_to_file=False):
     tp = 0 # True Pos
     fp = 0 # False Pos
     tn = 0 # True Neg
@@ -108,29 +111,31 @@ def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_
     if write_to_file:
         result = ''
     for i in xrange(len(x_test)):
-        #if not(i%100000):
+        #if not(i%10000):
         #    print(str(100 * float(i) / (len_l - dataset_split*len_l)) + '%')
         #    print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
         #    print('______________________')
         
-        x_test[i] = np.array(x_test[i])
-        x_test[i] = x_test[i].reshape(1, 3)
-        x_test[i] = x_test[i].astype('float32')
+        x_t = np.array(x_test[i])
+        x_t = x_t.reshape(1, 3)
+        x_t = x_t.astype('float32')
         
-        if ((int(x_test[i][0][1]) == 0) and (int(x_test[i][0][2]) == 0)):
+        if ((int(x_t[0][1]) == 0) and (int(x_t[0][2]) == 0)):
             predicted = 0
         else:
-            predicted = model.predict(x_test[i], verbose=0)
+            predicted = model.predict(x_t, verbose=0)
+            #predicted = predicted[0][0]
             #if predicted[0][0] > predicted[0][1]:
-            #    predicted = predicted[0][1]
-            #else:
             #    predicted = predicted[0][0]
-        #predicted = predicted[0][0]
+            #else:
+            #    predicted = predicted[0][1]
+        
         #actual = 1
         #if y_test[i][0] > y_test[i][1]:
         #    actual = 0
-        actual = y_test[i]
-        '''
+        actual = int(y_test[i])
+        #'''
+        #print x_test[i], actual, predicted
         if (actual == 1) and (predicted >= threshold): # True Positive
             tp += 1
         elif (actual == 0) and (predicted >= threshold): # False Positive
@@ -139,21 +144,21 @@ def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_
             fn += 1
         elif (actual == 0) and (predicted <= threshold): # True Negative
             tn += 1
-        '''
-        print i 
+        #'''
         if write_to_file:
+            result += str(x_test[i]) + '\t' + str(y_test[i]) + '\t' + str(actual) + '\t' + str(predicted) + '\n'
             #result += index[i][0] + '\t' + index[i][1] + '\t' + str(x_test[i]) + '\t' + str(y_test[i]) + '\t' + str(actual) + '\t' + str(predicted) + '\n'
-            result += index[i][0] + '\t' + index[i][1] + '\t' + str(actual) + '\t' + str(predicted) + '\n'
+            #result += index[i][0] + '\t' + index[i][1] + '\t' + str(actual) + '\t' + str(predicted) + '\n'
 
     if write_to_file:
-        w = open('ffnn_test_output.dat', 'w')
+        w = open('ffnn_test_output_k_chr1_uniq.dat', 'w')
         
         w.write('chrStart\tchrEnd\tactual\tpredicted\n')
         w.write(result)
         
         w.close()
 
-
+    print threshold
     print('TP:', tp, ' ', 'TN:', tn, ' ', 'FP:', fp, 'FN:', fn)
     
     precision = recall = -1
@@ -176,8 +181,9 @@ def custom_metrics(model, index, x_test, y_test, len_l, dataset_split, write_to_
     print('Accuracy:', accuracy)
     print('Precision:', precision)
     print('Recall:', recall)
+    print('_________')
 
 if custom_metrics_flag:
-    custom_metrics(model, index, x_test, y_test, len_l, dataset_split, to_file)
+    custom_metrics(model, index, x_test, y_test, len_l, threshold, dataset_split, to_file)
 else:
     inbuilt_metrics(model, x_test, y_test)

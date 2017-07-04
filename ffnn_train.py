@@ -31,44 +31,44 @@ def recall(y_true, y_pred):
     return recall
 
 print 'Opening file...'
-f = open('gm_chr6_mod_peak.dat')
+f = open('gm_chr6_peak_77pct.csv')
 l = f.readlines()
 f.close()
 
 print 'starting'
-random.shuffle(l)
-random.shuffle(l)
-random.shuffle(l)
-random.shuffle(l)
+#random.shuffle(l)
+#random.shuffle(l)
+#random.shuffle(l)
+#random.shuffle(l)
 
 len_l = len(l)
 for i in range(len_l):
     #print i
-    #l[i] = l[i].split(',') # for csv files
-    #'''
+    l[i] = l[i].split(',') # for csv files
+    '''
     l[i] = l[i].split() # for dat files
     del l[i][0]
     del l[i][0]
-    #'''
+    '''
 
 for i in range(len_l):
     l[i][0] = int(float(l[i][0]))
     l[i][1] = float(l[i][1])
     l[i][2] = float(l[i][2])
-    l[i][3] = float(l[i][3]) # for dat files
-    '''
+    #l[i][3] = float(l[i][3]) # for dat files
+    #'''
     # for csv files
     if l[i][3] == 'no\n':
         l[i][3] = 0.0
     else:
         l[i][3] = 1.0
-    '''
-batch_size = 12
+    #'''
+batch_size = 64
 num_classes = 2
-epochs = 20
+epochs = 2
 
 threshold = 0.5 # threshold for the classifier
-dataset_split = 0.7
+dataset_split = 0.85
 
 def create_training_and_test_set(data, split=0.6):
     '''
@@ -110,8 +110,8 @@ y_train = y_train.astype('float32')
 x_test = x_test.astype('float32')
 y_test = y_test.astype('float32')
 
-y_train = keras.utils.to_categorical(y_train, 2)
-y_test = keras.utils.to_categorical(y_test, 2)
+#y_train = keras.utils.to_categorical(y_train, 2)
+#y_test = keras.utils.to_categorical(y_test, 2)
 
 def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write_to_file=False):
     tp = 0 # True Pos
@@ -124,21 +124,31 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         result = ''
     
     for i in xrange(len(x_test)):
-        if not(i%100):
-            print(str(float(i)/(len_l - dataset_split*len_l)) + '%')
-            print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
-            print('______________________')
+        #if not(i%100):
+        #    print(str(float(i)/(len_l - dataset_split*len_l)) + '%')
+        #    print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
+        #    print('______________________')
         
         x_test[i] = np.array(x_test[i])
         x_test[i] = x_test[i].reshape(1, 3)
         x_test[i] = x_test[i].astype('float32')
-    
-        predicted = model.predict(x_test[i], verbose=0)
-        predicted = predicted[0][0]
         
-        actual = int(y_test[i])
-        #print(actual, predicted)
-
+        if ((x_test[i][0][1] == 0.0) and (x_test[i][0][2] == 0.0)):
+            predicted = 0
+        else:
+            predicted = model.predict(x_test[i], verbose=0)
+            #predicted = predicted[0][0]
+            #if predicted[0][0] > predicted[0][1]:
+            #    predicted = predicted[0][0]
+            #else:
+            #    predicted = predicted[0][1]
+        
+        actual = y_test[i]
+        #actual = 1
+        #if y_test[i][0] > y_test[i][1]:
+        #    actual = 0
+        print(x_test[i], actual, predicted)
+        '''
         if (actual == 1) and (predicted >= threshold): # True Positive
             tp += 1
         elif (actual == 0) and (predicted >= threshold): # False Positive
@@ -147,7 +157,7 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
             fn += 1
         elif (actual == 0) and (predicted <= threshold): # True Negative
             tn += 1
-
+        
     accuracy = precision = recall = -1
     
     try:
@@ -179,7 +189,7 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         print('Accuracy:', accuracy)
         print('Precision:', precision)
         print('Recall:', recall)
-
+        '''
 def inbuilt_metrics(model, x_test, y_test):
     score = model.evaluate(x_test, y_test, verbose=0)
     print('Test loss:', score[0])
@@ -196,31 +206,34 @@ if not(custom_metrics_flag):
     model.add(Dropout(0.5))
     model.add(Dense(32, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
     model.add(Dropout(0.5))
-    model.add(Dense(2, activation='softmax'))
+    model.add(Dense(1, activation='linear'))
 
     model.summary()
 
-    model.compile(loss='categorical_crossentropy',
+    model.compile(loss='mean_squared_error',
                   optimizer=Adam(),
                   metrics=['accuracy', precision, recall])
-
+    cw = {0: 1,
+          1: 3.5}
     history = model.fit(x_train, y_train,
                         batch_size=batch_size,
                         epochs=epochs,
                         verbose=1,
-                        validation_data=(x_test, y_test))
+                        validation_data=(x_test, y_test),
+                        class_weight=cw)
 
-    model.save('ffnn_train_gm_chr6.h5')
+    model.save('ffnn_train_gm_chr6_77pct.h5')
     
     inbuilt_metrics(model, x_test, y_test)
 
 else:
-    model = load_model('ffnn_train_gm_chr6.h5', custom_objects={'precision':precision, 'recall':recall})
+    model = load_model('ffnn_train_gm_chr6_77pct.h5', custom_objects={'precision':precision, 'recall':recall})
     
     if to_file:
-        for th in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-            print th
-            custom_metrics(model, x_test, y_test, len_l, th, dataset_split, to_file)
+        #for th in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        #    print th
+        th = 0.5
+        custom_metrics(model, x_test, y_test, len_l, th, dataset_split, to_file)
     else:
         custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, to_file)
 
