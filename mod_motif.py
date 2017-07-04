@@ -72,7 +72,6 @@ for el in gffl:
         # motif present or not?
         #if ('myc' in el[-1]) or ('MYC' in el[-1]):
         if 'E2F' in el[-1]:    
-            #mchrl[index][4] = '1'
             motif_cnt += 1
             
             # extract prev score
