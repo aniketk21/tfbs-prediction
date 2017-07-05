@@ -71,18 +71,24 @@ for el in gffl:
     if index != -1:
         # motif present or not?
         #if ('myc' in el[-1]) or ('MYC' in el[-1]):
-        if 'E2F' in el[-1]:    
+        if 'E2F' in el[-1]:
             motif_cnt += 1
+            if 'E2F4' in el[-1]:
+                # extract prev score
+                prev = mchrl[index][3]
+                if float(el[5]) > float(prev):
+                    mchrl[index][3] = el[5]
             
-            # extract prev score
-            prev = mchrl[index][3]
-            if float(el[5]) > float(prev):
-                mchrl[index][3] = el[5]
+            if 'E2F6' in el[-1]:
+                # extract prev score
+                prev = mchrl[index][4]
+                if float(el[5]) > float(prev):
+                    mchrl[index][4] = el[5]
     else:
         print "Not found", num_mchrl
 
 for el in mchrl:
-    res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\n'
+    res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\t' + el[6] + '\n'
 
 print('Number of motifs = ' + str(motif_cnt))
 

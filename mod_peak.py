@@ -73,7 +73,7 @@ for el in npsl:
     index = bin_search(num_inpl, first_col_in_inpl)
     if index != -1:
         if el[3] == 'B': # if bound.
-            inpl[index][5] = '1'
+            inpl[index][6] = '1'
             peak_cnt += 1
         '''
         prev = inpl[index][5]
@@ -85,7 +85,7 @@ for el in npsl:
         print "Not found", num_inpl
 
 for el in inpl:
-    res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\n'
+    res += el[0] + '\t' + el[1] + '\t' + el[2] + '\t' + el[3] + '\t' + el[4] + '\t' + el[5] + '\t' + el[6] + '\n'
 
 print('Number of peaks: ' + str(peak_cnt))
 

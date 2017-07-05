@@ -43,7 +43,7 @@ for el in g_lines:
     while True:
         elem = f_lines[i]
         if int(elem[1]) <= high:
-            line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(chrom) + '\t' + str(elem[3]) + '\t' +  str(elem[4]) + '\t' + str(elem[5]) + '\n'
+            line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(chrom) + '\t' + str(elem[3]) + '\t' +  str(elem[4]) + '\t' + str(elem[5]) + '\t' + str(elem[6]) + '\n'
             i += 1
             if i == len(f_lines):
                 break
@@ -55,7 +55,7 @@ for el in g_lines:
 
 for j in range(i, len(f_lines)):
     elem = f_lines[j]
-    line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' + '0' + '\t' + str(elem[5]) + '\n'
+    line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' + '0' + '\t' + str(elem[5])  + '\t' + str(elem[6]) + '\n'
 
 h.write(line)
 
