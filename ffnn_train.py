@@ -31,15 +31,18 @@ def recall(y_true, y_pred):
     return recall
 
 print 'Opening file...'
-f = open('gm_chr6_peak_77pct.csv')
+f = open('gm_chr6_mod_peak.csv')
 l = f.readlines()
 f.close()
 
 print 'starting'
-#random.shuffle(l)
-#random.shuffle(l)
-#random.shuffle(l)
-#random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
+random.shuffle(l)
 
 len_l = len(l)
 for i in range(len_l):
@@ -49,26 +52,27 @@ for i in range(len_l):
     l[i] = l[i].split() # for dat files
     del l[i][0]
     del l[i][0]
-    '''
+    #'''
 
 for i in range(len_l):
     l[i][0] = int(float(l[i][0]))
     l[i][1] = float(l[i][1])
     l[i][2] = float(l[i][2])
-    #l[i][3] = float(l[i][3]) # for dat files
+    l[i][3] = float(l[i][3])
+    #l[i][4] = float(l[i][4]) # for dat files
     #'''
     # for csv files
-    if l[i][3] == 'no\n':
-        l[i][3] = 0.0
+    if l[i][4] == 'no\n':
+        l[i][4] = 0.0
     else:
-        l[i][3] = 1.0
+        l[i][4] = 1.0
     #'''
 batch_size = 64
 num_classes = 2
-epochs = 2
+epochs = 10
 
 threshold = 0.5 # threshold for the classifier
-dataset_split = 0.85
+dataset_split = 0.9
 
 def create_training_and_test_set(data, split=0.6):
     '''
@@ -82,12 +86,12 @@ def create_training_and_test_set(data, split=0.6):
     len_data = len(data)
     
     for i in range(int(split * len_data)):
-        x_train.append([[data[i][0], data[i][1], data[i][2]]])
-        y_train.append(data[i][3])
+        x_train.append([[data[i][0], data[i][1], data[i][2], data[i][3]]])
+        y_train.append(data[i][4])
     
     for i in range(int(split * len_data), len_data):
-        x_test.append([[data[i][0], data[i][1], data[i][2]]])
-        y_test.append(data[i][3])
+        x_test.append([[data[i][0], data[i][1], data[i][2], data[i][3]]])
+        y_test.append(data[i][4])
 
     return (x_train, y_train), (x_test, y_test)
 
@@ -101,9 +105,9 @@ y_train = np.array(y_train)
 x_test = np.array(x_test)
 y_test = np.array(y_test)
 
-x_train = x_train.reshape(int(dataset_split*len_l), 3)
+x_train = x_train.reshape(int(dataset_split*len_l), 4)
 if not(custom_metrics_flag):
-    x_test = x_test.reshape(len_l - int(dataset_split*len_l), 3)
+    x_test = x_test.reshape(len_l - int(dataset_split*len_l), 4)
 
 x_train = x_train.astype('float32')
 y_train = y_train.astype('float32')
@@ -129,26 +133,26 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         #    print('TP:', tp, 'TN:', tn, 'FP:', fp, 'FN:', fn)
         #    print('______________________')
         
-        x_test[i] = np.array(x_test[i])
-        x_test[i] = x_test[i].reshape(1, 3)
-        x_test[i] = x_test[i].astype('float32')
+        x_t = np.array(x_test[i])
+        x_t = x_t.reshape(1, 4)
+        x_t = x_t.astype('float32')
         
-        if ((x_test[i][0][1] == 0.0) and (x_test[i][0][2] == 0.0)):
+        if ((x_t[0][1] == 0.0) and (x_t[0][2] == 0.0) and (x_t[0][3] == 0.0)):
             predicted = 0
         else:
-            predicted = model.predict(x_test[i], verbose=0)
+            predicted = model.predict(x_t, verbose=0)
             #predicted = predicted[0][0]
-            #if predicted[0][0] > predicted[0][1]:
-            #    predicted = predicted[0][0]
-            #else:
-            #    predicted = predicted[0][1]
+            if predicted[0][0] > predicted[0][1]:
+                predicted = predicted[0][0]
+            else:
+                predicted = predicted[0][1]
         
-        actual = y_test[i]
-        #actual = 1
-        #if y_test[i][0] > y_test[i][1]:
-        #    actual = 0
-        print(x_test[i], actual, predicted)
-        '''
+        #actual = y_test[i]
+        actual = 1
+        if y_test[i][0] > y_test[i][1]:
+            actual = 0
+        #print(x_test[i], actual, predicted)
+        #'''
         if (actual == 1) and (predicted >= threshold): # True Positive
             tp += 1
         elif (actual == 0) and (predicted >= threshold): # False Positive
@@ -189,7 +193,6 @@ def custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, write
         print('Accuracy:', accuracy)
         print('Precision:', precision)
         print('Recall:', recall)
-        '''
 def inbuilt_metrics(model, x_test, y_test):
     score = model.evaluate(x_test, y_test, verbose=0)
     print('Test loss:', score[0])
@@ -200,21 +203,20 @@ def inbuilt_metrics(model, x_test, y_test):
 #Train the model
 if not(custom_metrics_flag):
     model = Sequential()
-    model.add(Dense(32, activation='relu', input_dim=3, kernel_regularizer=regularizers.l2(0.01)))#input_shape = (5, )))
+    model.add(Dense(32, activation='relu', input_dim=4, kernel_regularizer=regularizers.l2(0.01)))#input_shape = (5, )))
     model.add(Dropout(0.5))
-    model.add(Dense(32*2, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
+    model.add(Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
     model.add(Dropout(0.5))
     model.add(Dense(32, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
     model.add(Dropout(0.5))
-    model.add(Dense(1, activation='linear'))
+    model.add(Dense(1, activation='relu'))
 
     model.summary()
 
     model.compile(loss='mean_squared_error',
                   optimizer=Adam(),
                   metrics=['accuracy', precision, recall])
-    cw = {0: 1,
-          1: 3.5}
+    cw = {0: 1, 1: 15.55}
     history = model.fit(x_train, y_train,
                         batch_size=batch_size,
                         epochs=epochs,
@@ -222,18 +224,17 @@ if not(custom_metrics_flag):
                         validation_data=(x_test, y_test),
                         class_weight=cw)
 
-    model.save('ffnn_train_gm_chr6_77pct.h5')
+    model.save('ffnn_train_gm_chr6_mod_peak.h5')
     
     inbuilt_metrics(model, x_test, y_test)
 
 else:
-    model = load_model('ffnn_train_gm_chr6_77pct.h5', custom_objects={'precision':precision, 'recall':recall})
+    model = load_model('ffnn_train_gm_chr6_mod_peak.h5', custom_objects={'precision':precision, 'recall':recall})
     
     if to_file:
-        #for th in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        #    print th
-        th = 0.5
-        custom_metrics(model, x_test, y_test, len_l, th, dataset_split, to_file)
+        for th in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+            print th
+            custom_metrics(model, x_test, y_test, len_l, th, dataset_split, to_file)
     else:
         custom_metrics(model, x_test, y_test, len_l, threshold, dataset_split, to_file)
 
