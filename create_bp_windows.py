@@ -18,16 +18,16 @@ high2 = int(sys.argv[4])
 cnt = 0
 while low1 <= low2 and high1 <= high2:
     '''
-        chrStart    chrEnd  chrom_state motif_score motif   chipseq_peak
+        chrStart    chrEnd  chrom_state e2f4_motif_score e2f6_motif_score dnase   chipseq_peak
     '''
-    f.write(str(low1) + '\t' + str(high1) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
+    f.write(str(low1) + '\t' + str(high1) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
     f.write('\n')
     low1 += 50
     high1 += 50
     cnt += 1
 
 while (high1 + 200) <= high2:
-    f.write(str(high1) + '\t' + str(high1 + 200) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
+    f.write(str(high1) + '\t' + str(high1 + 200) + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0')
     f.write('\n')
     high1 += 50
     cnt += 1
