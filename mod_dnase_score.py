@@ -32,7 +32,7 @@ for el in bedl:
     while True:
         elem = inpl[i]
         if int(elem[1]) <= high:
-            line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' +  str(dnase) + '\t' + str(elem[5]) + '\n'
+            line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' + str(elem[4]) + '\t' + str(dnase) + '\t' + str(elem[6]) + '\n'
             i += 1
             if i == len(inpl):
                 break
@@ -44,7 +44,7 @@ for el in bedl:
 
 for j in range(i, len(inpl)):
     elem = inpl[j]
-    line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' + '0' + '\t' + str(elem[5]) + '\n'
+    line += str(elem[0]) + '\t' + str(elem[1]) + '\t' + str(elem[2]) + '\t' + str(elem[3]) + '\t' + str(elem[4]) + '\t' + '0' + '\t' + str(elem[6]) + '\n'
 
 out.write(line)
 
