@@ -10,8 +10,8 @@ from keras.optimizers import *
 from keras.models import load_model
 
 custom_metrics_flag = True
-to_file = False
-threshold = 0.9
+to_file = True
+threshold = 0.5
 def precision(y_true, y_pred):		
     """
         Precision metric.		
@@ -45,7 +45,7 @@ for i in range(len_l):
     #l[i] = l[i].split(',')
     #'''
     l[i] = l[i].split()
-    index.append([l[i][0], l[i][1]])
+    #index.append([l[i][0], l[i][1]])
     del l[i][0]
     del l[i][0]
     #'''
@@ -59,10 +59,10 @@ for i in range(len_l):
         l[i][3] = 0.0
     else:
         l[i][3] = 1.0
-    '''
+    #'''
 batch_size = 256
 num_classes = 2
-epochs = 5
+epochs = 2
 
 dataset_split = 0
 
@@ -106,8 +106,8 @@ x_train = x_train.reshape(int(dataset_split*len_l), 1, 3)
 x_train = x_train.astype('float32')
 #x_test = x_test.astype('float32')
 
-y_train = keras.utils.to_categorical(y_train, num_classes)
-y_test = keras.utils.to_categorical(y_test, num_classes)
+#y_train = keras.utils.to_categorical(y_train, num_classes)
+#y_test = keras.utils.to_categorical(y_test, num_classes)
 
 '''
 model = Sequential()
@@ -117,11 +117,11 @@ model.add(LSTM(64, activation='relu', kernel_regularizer=regularizers.l2(0.01), 
 model.add(Dropout(0.5))
 model.add(LSTM(32, activation='relu', kernel_regularizer=regularizers.l2(0.01), return_sequences=False))
 model.add(Dropout(0.5))
-model.add(Dense(2, activation='softmax'))
+model.add(Dense(1, activation='relu'))
 
 model.summary()
 
-model.compile(loss='categorical_crossentropy',
+model.compile(loss='mean_squared_error',
               optimizer=Adam(),
               metrics=['accuracy', precision, recall])
 
@@ -140,7 +140,7 @@ print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 print('Test precision:', score[2])
 print('Test recall:', score[3])
-#'''
+'''
 #'''
 def inbuilt_metrics(model, x_test, y_test):
     score = model.evaluate(x_test, y_test, verbose=0)
@@ -173,16 +173,16 @@ def custom_metrics(model, index, x_test, y_test, len_l, threshold, dataset_split
             predicted = 0
         else:
             predicted = model.predict(x_t, verbose=0)
-            #predicted = predicted[0][0]
-            if predicted[0][0] > predicted[0][1]:
-                predicted = predicted[0][0]
-            else:
-                predicted = predicted[0][1]
-        actual = 1
-        if y_test[i][0] > y_test[i][1]:
-            actual = 0
+            predicted = predicted[0][0]
+            #if predicted[0][0] > predicted[0][1]:
+            #    predicted = predicted[0][0]
+            #else:
+            #    predicted = predicted[0][1]
+        #actual = 1
+        #if y_test[i][0] > y_test[i][1]:
+        #    actual = 0
         
-        #actual = int(y_test[i])
+        actual = int(y_test[i])
         #print index[i][0], index[i][1], actual, predicted
         if (actual == 1) and (predicted >= threshold): # True Positive
             tp += 1
@@ -194,7 +194,7 @@ def custom_metrics(model, index, x_test, y_test, len_l, threshold, dataset_split
             tn += 1
         if write_to_file:
             #result += index[i][0] + '\t' + index[i][1] + '\t' + str(x_test[i]) + '\t' + str(y_test[i]) + '\t' + str(actual) + '\t' + str(predicted) + '\n'
-            result += index[i][0] + '\t' + index[i][1] + '\t' + str(actual) + '\t' + str(predicted) + '\n'
+            result += str(x_t) +'\t' + str(y_test[i]) + '\t' + str(actual) + '\t' + str(predicted) + '\n'
 
     if write_to_file:
         w = open('lstm_output_k_chr1.dat', 'w')
