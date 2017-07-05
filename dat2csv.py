@@ -18,13 +18,13 @@ for i in range(len(l)):
 res = ''
 
 for i  in range(len(l)):
-    res += l[i][0]+','+l[i][1]+','+l[i][2]+','
-    if l[i][3] == '0':
+    res += l[i][0]+','+l[i][1]+','+l[i][2]+','+l[i][3]+','
+    if l[i][4] == '0':
         res += 'no\n'
     else:
         res += 'yes\n'
 
-w.write('chrom,motif_score,motif,peak\n')
+w.write('chrom,e2f4_score,e2f6_score,dnase_score,peak\n')
 w.write(res)
 
 w.close()
