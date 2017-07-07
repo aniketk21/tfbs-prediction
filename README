@@ -1,0 +1,97 @@
+Predicting Transcription Factor Binding Sites using Deep Learning
+
+Here we use ENCODE data viz. ChIP-seq peaks (narrowPeak files), genome segmentation data (BED files), Motif information (GFF files) and DNASE information (narrowPeak files) to predict the probability of a Transcription Factor (TF) binding in a 200 bp window (chrStart-chrEnd).
+
+Files:
+- data_pipeline.sh
+- find_bed_range.py
+- create_bp_windows.py
+- mod_chrom.py
+- mod_motif.py
+- mod_dnase_score.py
+- mod_peak.py
+- dat2csv.py
+- uniq.py
+- rm_ambiguous.py
+- prc.py
+- auprc.r
+
+1. data_pipeline.sh
+    Creates the dataset to be given to the model as input:
+    usage: ./data_pipeline.sh
+    For command line arguments, refer to each .py file's documentation.
+
+2. find_bed_range.py
+    Outputs the ranges (low1, low2 and high2) for the 200 bp windows to be created.
+    usage: python find_bed_range.py bed_file.bed
+    Round low1 to the nearest multiple of 50.
+    Put these (low1, low2 and high2) in the data_pipeline.sh file.
+    Windows created:
+        low1    low1+200
+        ...
+        ...
+        low2    high2
+
+3. create_bp_windows.py
+    Outputs a tab-separated dataset in the format:
+        chrStart  chrEnd  chrom_state  e2f4_motif_score  e2f6_motif_score  dnase_score  chipseq_peak
+    chrStart, chrEnd -> integers
+    chrom_state -> an integer between [1, 7], both inclusive
+    e2f4_motif_score, e2f6_motif_score, dnase_score -> floats
+    chipseq_peak -> binary [0 or 1]
+    In the output file, all features except chrStart and chrEnd are 0.
+
+4. mod_chrom.py
+    Modifies the chromatin state. Input is a BED file.
+
+5. mod_motif.py
+    Modifies the E2F4 and E2F6 motif score values. Input is a GFF file.
+
+6. mod_dnase_score.py
+    Modifies the DNASE score. Input is a narrowPeak file.
+
+7. mod_peak.py
+    Modifies the peak values. Input is a tsv file.
+
+The dataset created has an imbalanced class distribution (99% 0s and 1% 1s). It also has many duplicate instances. To change the class distribution or to clean up the data, proceed further. Else, stop.
+
+8. dat2csv.py
+    Creates a csv file from the previous output in the format:
+        chrom_state,e2f4_motif_score,e2f6_motif_score,dnase_score,chipseq_peak
+    [Optional] Now, we can can apply the SMOTE algorithm to change the class distribution. Use the Weka Software to apply SMOTE.
+
+9. uniq.py
+    Creates a csv file containing only the unique instances from the previous output file.
+
+10. rm_ambiguous.py
+    Removes all the ambiguous instances eg.
+        7,8.872,0,0.0574,yes
+        7,8.872,0,0.0574,no
+    Instances of such type having class label as 'yes' are removed.
+
+11. [Optional] Now, we can can apply the SMOTE algorithm to change the class distribution. Use the Weka Software to apply SMOTE.
+
+12. ffnn_train.py
+    Train the Feed Forward Neural Network model.
+    Tune the hyperparameters to get the best accuracy, precision and recall.
+
+    Setting the `cw` (class_weight):
+        Count the number of 'no's and 'yes's in the final dataset.
+        For example, if there are 1000000 no's and 10 yes's, `cw` will be:
+        cw = {0:100000, 1:1} (The keys of this dictionary are the class labels and the corresponding values are the class weights)
+    
+    This file has options to change the input file format (.dat or .csv), save the learnt model and save the precision-recall values at different thresholds to a file.
+
+13. ffnn_test.py
+    Test the Feed Forward Neural Network model.
+    It has options to change the input file format (.dat or .csv), show predictions and save them to a file and save the precision recall values to a file.
+
+14. [optional] model.py
+    This file has the LSTM Neural Network model.
+    The above described options are also available in this file.
+
+15. prc.py
+    Plot the precision recall curve. Inputs are arrays of precision and recall values.
+
+16. auprc.r
+    Calculates the auPRC, given arrays of precision and recall values. Note: The recall values have to be in ascending order.
